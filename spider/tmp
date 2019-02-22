@@ -1,0 +1,27 @@
+ArticleRef(
+avatar="https://profile.csdnimg.cn/6/6/7/1_u011529752",
+cache_time="1550825205",category="",
+category_id="none",
+comments="0",
+commits="0",
+created_at="03月21日",
+desc="C_SVC推导1. 模型假设假设现在有训练数据XX，是m∗nm*n的矩阵，mm是样本数量，nn是样本向量的维数，记样本中第ii个样本为x(i)x^{(i)},标签为y(i)y^{(i)},y∈{+1,−1}y\in\{+1,-1\} 
+现在考虑二分类问题，样本的标签为y⃗ \vec{y}，是m∗1m*1的向量。 
+目的，找到一个最优的相关面，以方程w⃗ ∗x⃗ +b=0\vec{w}*\vec{x}",
+downs="0",
+id="64443133",
+isexpert="0",
+nickname="Maxwellhang",
+shown_offset=1550825183594299,
+shown_time="1550825183",
+strategy="其它",
+strategy_id="none",
+sub_title="u011529752的博客",
+summary="C_SVC推导1. 模型假设假设现在有训练数据XX，是m&lowast;nm*n的矩阵，mm是样本数量，nn是样本向量的维数，记样本中第ii个样本为x(i)x^{(i)},标签为y(i)y^{(i)},y&isin;{+1,&minus;1}y\in\{+1,-1\} 
+现在考虑二分类问题，样本的标签为y⃗&nbsp;\vec{y}，是m&lowast;1m*1的向量。 
+目的，找到一个最优的相关面，以方程w⃗&nbsp;&lowast;x⃗&nbsp;+b=0\vec{w}*\vec{x}",tag="svm,推导,kkt,对偶算法",
+title="C_SVC推导(经典的SVM模型)",
+type="blog",
+url="https://blog.csdn.net/u011529752/article/details/64443133",user_name="u011529752",
+user_url="https://blog.csdn.net/u011529752",
+views="4488")

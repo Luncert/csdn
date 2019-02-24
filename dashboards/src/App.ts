@@ -13,3 +13,5 @@ class App extends Component
 }
 
 ReactDOM.render(r(App, null), document.getElementById('root'));
+
+// https://demos.creative-tim.com/material-dashboard-react/#/documentation/tutorial

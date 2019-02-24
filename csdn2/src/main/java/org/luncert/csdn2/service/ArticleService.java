@@ -17,6 +17,7 @@ import org.luncert.csdn2.util.Request;
 import org.luncert.csdn2.util.Response;
 import org.springframework.stereotype.Service;
 
+import lombok.Getter;
 import lombok.ToString;
 
 @Service
@@ -94,10 +95,11 @@ public class ArticleService
     }
 
     @ToString
+    @Getter
     public static class ArticleRefs
     {
-        List<ArticleRef> refs;
-        String shownOffset;
+        private List<ArticleRef> refs;
+        private String shownOffset;
         private ArticleRefs(List<ArticleRef> refs, String shownOffset)
         {
             this.refs = refs;

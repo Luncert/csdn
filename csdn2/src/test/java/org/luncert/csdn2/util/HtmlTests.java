@@ -13,7 +13,7 @@ import org.luncert.csdn2.util.Html.FindFilterChain;
 import org.luncert.csdn2.util.Html.HTMLElem;
 
 @RunWith(JUnit4.class)
-public class TestHtml
+public class HtmlTests
 {
 
     HTMLElem doc;

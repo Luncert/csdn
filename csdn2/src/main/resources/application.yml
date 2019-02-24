@@ -1,0 +1,4 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://csdn:Luncert428@luncert.cn:27017/csdn

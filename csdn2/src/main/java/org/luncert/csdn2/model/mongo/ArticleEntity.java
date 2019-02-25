@@ -1,4 +1,4 @@
-package org.luncert.csdn2.model;
+package org.luncert.csdn2.model.mongo;
 
 import java.io.Serializable;
 

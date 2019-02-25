@@ -1,4 +1,4 @@
-package org.luncert.csdn2.model;
+package org.luncert.csdn2.model.mongo;
 
 import java.io.Serializable;
 
@@ -15,9 +15,15 @@ import lombok.Data;
 public class LogEntity implements Serializable
 {
 
-    public static final String ERROR = "ERROR";
-    public static final String WARN = "WARN";
-    public static final String INFO = "INFO";
+    public enum LogLevel
+    {
+        Error, Warn, Info;
+
+        public String getName()
+        {
+            return this.toString().toLowerCase();
+        }
+    }
 
     private static final long serialVersionUID = 1L;
     

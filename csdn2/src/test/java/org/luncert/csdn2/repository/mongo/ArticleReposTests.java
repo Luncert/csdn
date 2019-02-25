@@ -1,16 +1,17 @@
-package org.luncert.csdn2.repository;
+package org.luncert.csdn2.repository.mongo;
 
 import java.util.Date;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.luncert.csdn2.model.ArticleEntity;
+import org.luncert.csdn2.model.mongo.ArticleEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class ArticleReposTests
 {
 

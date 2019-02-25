@@ -1,0 +1,26 @@
+.root {
+    position: relative;
+    box-sizing: border-box;
+    padding: 5px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    width: 300px; height: 300px;
+
+    overflow-y: scroll;
+}
+
+.root::-webkit-scrollbar {
+    margin-right: 2px;
+    width: 10px;
+}
+
+.root::-webkit-scrollbar-thumb {
+    box-sizing: border-box;
+    background-color: rgb(150, 150, 150);
+    border: 1px white solid;
+    border-radius: 5px;
+}
+
+.root::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0);
+}

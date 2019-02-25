@@ -1,0 +1,24 @@
+
+.label {
+    display: inline-block;
+    vertical-align: middle;
+    word-break: break-all;
+    word-wrap: break-word;
+    margin: 2px;
+}
+
+.fill {
+    box-sizing: content-box;
+    color: white !important;
+    border-radius: 3px;
+    padding: 0px 5px;
+}
+
+.info { color: rgb(113, 114, 113); }
+.fill.info { background-color: rgb(172, 211, 172); }
+
+.warn { color: rgb(206, 190, 53); }
+.fill.warn { background-color: rgb(206, 190, 53); }
+
+.error { color: rgb(194, 15, 15); }
+.fill.error { background-color: rgb(194, 15, 15); }

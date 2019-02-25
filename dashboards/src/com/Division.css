@@ -1,0 +1,17 @@
+
+.division {
+    display: block;
+    box-sizing: border-box;
+    position: relative;
+    background-color: rgb(180, 180, 180);
+}
+
+.horizontal {
+    width: calc(100% - 10px); height: 1px;
+    margin: 5px auto;
+}
+
+.vertical {
+    width: 1px; height: calc(100% - 10px);
+    margin: auto 5px;
+}

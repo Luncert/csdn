@@ -1,13 +1,14 @@
 import * as ReactDOM from 'react-dom';
-import { r } from './util/react-helper';
-import { Component } from './Component';
+import { r, rc } from './util/react-helper';
+import { Component } from './com/Component';
+import HomePage from './page/HomePage';
 
 class App extends Component
 {
 
     render()
     {
-        return r('div', null);
+        return r(HomePage, null);
     }
     
 }

@@ -4,7 +4,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports ={
-  target: 'electron-renderer',
+  target: 'web',
   entry: './src/App.ts',
   mode: 'development',
   output: {
@@ -19,7 +19,6 @@ module.exports ={
   module: {
     rules: [
       { test: /\.node$/, loader: "node-loader" },
-      { test: /\.coffee$/, loader: "coffee-loader" },
       { test: /\.ts$/, loader: "ts-loader" },
       { test: /\.css$/,
         use: [
@@ -33,7 +32,7 @@ module.exports ={
           }
         ]
       },
-      { test: [/\.jpeg$/, /\.mp3$/],
+      { test: [/\.jpeg$/, /\.mp3$/, /\.jpg$/],
         use: [
             {
                 loader: 'url-loader',

@@ -1,0 +1,109 @@
+@font-face {
+    font-family: 'icomoon';
+    src:  url('fonts/icomoon.eot?z08b6f');
+    src:  url('fonts/icomoon.eot?z08b6f#iefix') format('embedded-opentype'),
+      url('fonts/icomoon.ttf?z08b6f') format('truetype'),
+      url('fonts/icomoon.woff?z08b6f') format('woff'),
+      url('fonts/icomoon.svg?z08b6f#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  [class^="icon-"], [class*=" icon-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'icomoon' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+  
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .icon-directory:before {
+    content: "\e913";
+    color: #aaaaaa;
+  }
+  .icon-file:before {
+    content: "\e914";
+    color: #aaaaaa;
+  }
+  .icon-right-circle:before {
+    content: "\e90d";
+    color: #aaaaaa;
+  }
+  .icon-left-circle:before {
+    content: "\e90e";
+    color: #aaaaaa;
+  }
+  .icon-play-circle:before {
+    content: "\e90f";
+    color: #aaaaaa;
+  }
+  .icon-pause-circle:before {
+    content: "\e910";
+    color: #aaaaaa;
+  }
+  .icon-volume:before {
+    content: "\e911";
+    color: #aaaaaa;
+  }
+  .icon-mute:before {
+    content: "\e912";
+    color: #aaaaaa;
+  }
+  .icon-circle:before {
+    content: "\e90c";
+    color: #aaaaaa;
+  }
+  .icon-hide:before {
+    content: "\e90b";
+    color: #aaaaaa;
+  }
+  .icon-close:before {
+    content: "\e900";
+    color: #aaaaaa;
+  }
+  .icon-maxscreen:before {
+    content: "\e901";
+    color: #aaaaaa;
+  }
+  .icon-maxscreen-exit:before {
+    content: "\e902";
+    color: #aaaaaa;
+  }
+  .icon-account:before {
+    content: "\e903";
+    color: #aaaaaa;
+  }
+  .icon-notify:before {
+    content: "\e904";
+    color: #aaaaaa;
+  }
+  .icon-submit:before {
+    content: "\e905";
+    color: #aaaaaa;
+  }
+  .icon-menu:before {
+    content: "\e906";
+    color: #aaaaaa;
+  }
+  .icon-search:before {
+    content: "\e907";
+    color: #aaaaaa;
+  }
+  .icon-info:before {
+    content: "\e908";
+    color: #aaaaaa;
+  }
+  .icon-edit:before {
+    content: "\e909";
+    color: #aaaaaa;
+  }
+  .icon-home:before {
+    content: "\e90a";
+    color: #aaaaaa;
+  }

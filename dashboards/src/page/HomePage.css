@@ -4,3 +4,29 @@
     box-sizing: border-box;
     width: 100%; height: 100%;
 }
+
+.filterWrapper {
+    position: absolute;
+    width: 100%; height: 100%;
+    top: 0px; left: 0px;
+}
+
+.filter {
+    position: relative;
+    box-sizing: border-box;
+    width:500px; height: 30px;
+    margin: 100px auto;
+    background-color: rgba(50, 50, 50, 0.5);
+
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+.statistics {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%; height: 30px;
+    padding: 2px;
+    margin: 0px 0px 5px;
+}

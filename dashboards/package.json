@@ -17,7 +17,6 @@
     "css-loader": "^2.1.0",
     "csstype": "^2.6.2",
     "file-loader": "^3.0.1",
-    "material-dashboard-react": "^1.6.0",
     "node-loader": "^0.6.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",

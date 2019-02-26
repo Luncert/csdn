@@ -5,6 +5,10 @@ import ItemList from '../com/ItemList';
 import Avatar from '../com/Avatar';
 import Label from '../com/Label';
 import Division from '../com/Division';
+import Input from '../com/Input';
+import Button from '../com/Button';
+import Capsule from '../com/Capsule';
+import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
 
 const url = require('../res/img/author.jpg');
 const styles = <any> require('./HomePage.css');
@@ -105,11 +109,33 @@ let testLogData = [
     },
 ];
 
+interface CusState {
+    showFilterBox: boolean;
+}
+
 export default class HomePage extends Component {
 
     props: Props;
+    state: CusState;
+
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            showFilterBox: false
+        };
+    }
+
+    componentWillMount() {
+        // bind CTRL + SHIFT + F
+        acceleratorManager.register(
+            () => this.setState({showFilterBox: true}),
+            new CombineKey(KEYS.F, false, true, true)
+        );
+    }
 
     render() {
+        const { showFilterBox } = this.state;
+
         let key = 0;
         // 生成article列表
         let articleList = [];
@@ -148,24 +174,49 @@ export default class HomePage extends Component {
         if (logList.length > 0) logList.pop();
 
         return r('div', {className: styles.root},
-            rc(ItemList, 0, {
-                height: 'calc(100% - 20px)',
-                width: 'calc(50% - 20px)',
-                style: {
+            rc('div', 'leftSide', { style: {
+                    height: 'calc(100% - 20px)',
+                    width: 'calc(50% - 20px)',
                     margin: '10px',
                     display: 'inline-block',
                     verticalAlign: 'top'
-                }
-            }, articleList),
-            rc(ItemList, 1, {
-                height: 'calc(100% - 20px)',
-                width: 'calc(50% - 20px)',
-                style: {
+                } },
+                rc('div', 0, { className: styles.statistics },
+                    rc(Capsule, 0, { name: '总数据量', value: testArticleData.length, color: this.randomColor() })
+                ),
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, articleList)
+            ),
+            rc('div', 'rightSide', { style: {
+                    height: 'calc(100% - 20px)',
+                    width: 'calc(50% - 20px)',
                     margin: '10px',
                     display: 'inline-block',
                     verticalAlign: 'top'
-                }
-            }, logList),
+                } },
+                rc('div', 0, { className: styles.statistics },
+                    rc(Capsule, 0, { name: '总数据量', value: testLogData.length, color: this.randomColor() })
+                ),
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, logList)
+            ),
+            showFilterBox && rc('div', 'filterWrapper', {
+                    className: styles.filterWrapper,
+                    onClick: () => this.setState({ showFilterBox: false })
+                },
+                rc('div', 'filter', {
+                        className: styles.filter,
+                        onClick: (e: any) => e.stopPropagation()
+                    },
+                    rc(Input, 0, {
+                        backgroundColor: 'rgba(0, 0, 0, 0)',
+                        style: {
+                            width: 'calc(100% - 25px)',
+                            color: 'white',
+                            borderBottom: '1px solid rgb(200, 200, 200)'
+                        }
+                    }),
+                    rc(Button, 1, { type: 'search', style: { borderRadius: '5px', color: 'white' } })
+                )
+            )
         );
     }
 
@@ -179,4 +230,13 @@ export default class HomePage extends Component {
             + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
     }
     
+    private randomColor() {
+        let clr = '#';
+        const v = '0123456789abcdef';
+        for (let i = 0, limit = 6; i < limit; i++) {
+            clr += v[Math.round(Math.random() * 16)];
+        }
+        return clr;
+    }
+
 }

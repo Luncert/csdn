@@ -1,0 +1,29 @@
+
+.root {
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    vertical-align: top;
+    border-radius: 10px;
+    height: 25px;
+    border: 1px solid gray;
+    overflow: hidden;
+}
+
+.name,
+.value {
+    display: inline-block;
+    height: 100%;
+    line-height: 25px;
+    padding: 0px 4px;
+    vertical-align: top;
+}
+
+.name {
+    background-color: gray;
+    color: white;
+}
+
+.value {
+    color: gray;
+}

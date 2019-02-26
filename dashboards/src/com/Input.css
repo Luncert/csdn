@@ -9,5 +9,6 @@
     padding: 1px 3px;
     position: relative;
     vertical-align: top;
-    width: 200px; height: 22px;
+
+    -webkit-user-modify: read-write-plaintext-only;
 }

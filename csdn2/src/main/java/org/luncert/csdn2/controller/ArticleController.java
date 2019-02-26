@@ -26,7 +26,7 @@ public class ArticleController
         return repos.findOneByArticleId(articleId);
     }
 
-    @GetMapping
+    @GetMapping("")
     public List<ArticleEntity> articles()
     {
         return repos.findAll();

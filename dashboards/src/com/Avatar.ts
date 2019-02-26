@@ -18,8 +18,7 @@ export default class Avatar extends Component {
     props: CusProps;
 
     render() {
-        let { src, size, style, children } = this.props;
-        if (!style) style = {};
+        const { src, size, style={}, children } = this.props;
         style['backgroundImage'] = 'url(' + src + ')';
         if (size > 0) {
             style['width'] = size + 'px';

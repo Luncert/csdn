@@ -22,13 +22,18 @@ export default class Button extends Component {
     render() {
         const { type, fill=false, style={}, children } = this.props;
 
+        let className = st.join(styles.button, type ? 'icon-' + type : null);
+        let disable = type == 'disable';
+        if (disable) {
+            className = st.join(className, styles.disable);
+        }
         style['backgroundColor'] = fill ? 'rgb(50, 60, 80)' : '';
         return r('div', {
-            className: st.join(styles.button, type ? 'icon-' + type : null),
-            onClick: this.props['onClick'],
-            onDoubleClick: this.props['onDoubleClick'],
-            onMouseDown: this.props['onMouseDown'],
-            onMouseUp: this.props['onMouseUp'],
+            className: className,
+            onClick: !disable && this.props['onClick'],
+            onDoubleClick: !disable && this.props['onDoubleClick'],
+            onMouseDown: !disable && this.props['onMouseDown'],
+            onMouseUp: !disable && this.props['onMouseUp'],
             style: style
         }, children);
     }

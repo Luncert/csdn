@@ -9,9 +9,43 @@ import Input from '../com/Input';
 import Button from '../com/Button';
 import Capsule from '../com/Capsule';
 import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
+import DropBox from '../com/DropBox';
+import * as $ from 'jquery';
 
-const url = require('../res/img/author.jpg');
+const url = <any> require('../res/img/author.jpg');
 const styles = <any> require('./HomePage.css');
+
+interface Article {
+    title: string;
+    summary: string;
+    avatar: string;
+    author: string;
+    createTime: string;
+    viewCount: number;
+}
+
+const LogLevel = {
+    Info: 'Info', Warn: 'Warn', Error: 'Error'
+}
+
+const LOG_LEVEL = ['Info', 'Warn', 'Error'];
+
+interface Log {
+    level: string;
+    timestamp: number;
+    desc: string;
+    detail: string;
+}
+
+const SpiderStatus = {
+    Starting: 'Starting', Running: 'Running', Stopping: 'Stopping', Stopped: 'Stopped'
+}
+
+interface State {
+    showFilterBox: boolean;
+    filterQuery: string;
+    spiderStatus: string;
+}
 
 let testArticleData = [
     {
@@ -56,26 +90,6 @@ let testArticleData = [
     },
 ]
 
-interface Article {
-    title: string;
-    summary: string;
-    avatar: string;
-    author: string;
-    createTime: string;
-    viewCount: number;
-}
-
-const LogLevel = {
-    Info: 'Info', Warn: 'Warn', Error: 'Error'
-}
-
-interface Log {
-    level: string;
-    timestamp: number;
-    desc: string;
-    detail: string;
-}
-
 let testLogData = [
     {
         level: LogLevel.Info,
@@ -109,19 +123,18 @@ let testLogData = [
     },
 ];
 
-interface CusState {
-    showFilterBox: boolean;
-}
-
 export default class HomePage extends Component {
 
     props: Props;
-    state: CusState;
+    state: State;
+    colors: string[] = [];
 
     constructor(props: Props) {
         super(props);
         this.state = {
-            showFilterBox: false
+            showFilterBox: false,
+            filterQuery: null,
+            spiderStatus: SpiderStatus.Stopped
         };
     }
 
@@ -131,10 +144,31 @@ export default class HomePage extends Component {
             () => this.setState({showFilterBox: true}),
             new CombineKey(KEYS.F, false, true, true)
         );
+        for (let i = 0; i < 2; i++)
+            this.colors.push(this.randomColor());
+        // 刷新spider状态
+        this.refreshSpiderStatus();
+    }
+
+    refreshSpiderStatus() {
+        $.get()
+    }
+
+    filterQuery() {
+        console.log(this.state.filterQuery);
+    }
+
+    filterLogLevel(index: number) {
+        console.log(LOG_LEVEL[index]);
+    }
+
+    changeSpider() {
+        const { spiderStatus } = this.state;
+        // TODO: change spider
     }
 
     render() {
-        const { showFilterBox } = this.state;
+        const { showFilterBox, spiderStatus } = this.state;
 
         let key = 0;
         // 生成article列表
@@ -174,30 +208,25 @@ export default class HomePage extends Component {
         if (logList.length > 0) logList.pop();
 
         return r('div', {className: styles.root},
-            rc('div', 'leftSide', { style: {
-                    height: 'calc(100% - 20px)',
-                    width: 'calc(50% - 20px)',
-                    margin: '10px',
-                    display: 'inline-block',
-                    verticalAlign: 'top'
-                } },
-                rc('div', 0, { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: testArticleData.length, color: this.randomColor() })
+            // left side
+            rc('div', 'leftSide', { className: styles.listBox },
+                rc('div', 'statistics', { className: styles.statistics },
+                    rc(Capsule, 0, { name: '总数据量', value: testArticleData.length, color: this.colors[0] }),
                 ),
                 rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, articleList)
             ),
-            rc('div', 'rightSide', { style: {
-                    height: 'calc(100% - 20px)',
-                    width: 'calc(50% - 20px)',
-                    margin: '10px',
-                    display: 'inline-block',
-                    verticalAlign: 'top'
-                } },
-                rc('div', 0, { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: testLogData.length, color: this.randomColor() })
+            // right side
+            rc('div', 'rightSide', { className: styles.listBox },
+                rc('div', 'statistics', { className: styles.statistics },
+                    rc(Capsule, 0, { name: '总数据量', value: testLogData.length, color: this.colors[0] }),
+                    rc(DropBox, 1, {
+                        name: 'Level筛选', selected: 0,
+                        items: LOG_LEVEL, style: { float: 'right' },
+                        color: this.colors[1], onChange: this.filterLogLevel.bind(this) })
                 ),
                 rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, logList)
             ),
+            // filter box
             showFilterBox && rc('div', 'filterWrapper', {
                     className: styles.filterWrapper,
                     onClick: () => this.setState({ showFilterBox: false })
@@ -207,15 +236,31 @@ export default class HomePage extends Component {
                         onClick: (e: any) => e.stopPropagation()
                     },
                     rc(Input, 0, {
+                        focus: true,
+                        multiLine: true,
                         backgroundColor: 'rgba(0, 0, 0, 0)',
+                        onChange: (value: string) => this.setState({filterQuery: value}),
                         style: {
                             width: 'calc(100% - 25px)',
                             color: 'white',
                             borderBottom: '1px solid rgb(200, 200, 200)'
                         }
                     }),
-                    rc(Button, 1, { type: 'search', style: { borderRadius: '5px', color: 'white' } })
+                    rc(Button, 1, {
+                        type: 'search',
+                        onClick: this.filterQuery.bind(this),
+                        style: { borderRadius: '5px', color: 'white' } })
                 )
+            ),
+            // spider status
+            rc('div', 'spiderStataus', {className: styles.spiderStatus},
+                rc(Label, 'name', {color: 'red', size: 18}, 'CSDN Spider'),
+                rc(Label, 'status', null, spiderStatus),
+                rc(Button, 'control', {
+                    type: spiderStatus == SpiderStatus.Running ? 'pause-circle' : 
+                            (spiderStatus == SpiderStatus.Stopped) ? 'play-circle' : 'disable',
+                    onClick: this.changeSpider.bind(this),
+                    style: {verticalAlign: 'middle', borderRadius: '50%'}})
             )
         );
     }

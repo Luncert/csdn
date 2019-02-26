@@ -5,6 +5,7 @@
     box-sizing: border-box;
     padding: 2px;
     width: 25px; height: 25px;
+    color: white;
     font-size: 1.3em;
     border-radius: 2px;
     
@@ -12,7 +13,7 @@
     user-select: none;
 }
 
-.button[class*="search"]::before {
+.button[class*="icon-search"]::before {
     color: white;
 }
 
@@ -22,4 +23,12 @@
 
 .button:hover {
     background-color: rgb(206, 206, 206);
+}
+
+.disable[class*="icon-"]::before {
+    color: 'gray';
+}
+
+.disable:hover {
+    background-color: none;
 }

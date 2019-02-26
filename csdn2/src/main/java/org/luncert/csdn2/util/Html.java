@@ -14,16 +14,16 @@ import java.util.Stack;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.luncert.csdn2.util.antlr4.HTMLLexer;
-import org.luncert.csdn2.util.antlr4.HTMLParser;
-import org.luncert.csdn2.util.antlr4.HTMLParserBaseListener;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlAttributeContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlAttributeNameContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlAttributeValueContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlChardataContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlDocumentContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlElementContext;
-import org.luncert.csdn2.util.antlr4.HTMLParser.HtmlTagNameContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLLexer;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParserBaseListener;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlAttributeContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlAttributeNameContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlAttributeValueContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlChardataContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlDocumentContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlElementContext;
+import org.luncert.csdn2.util.htmlGrammar.HTMLParser.HtmlTagNameContext;
 
 import lombok.Getter;
 

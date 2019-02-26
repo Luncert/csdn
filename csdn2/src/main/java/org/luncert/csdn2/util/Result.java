@@ -9,7 +9,7 @@ public class Result
 {
     public enum Status
     {
-        OK
+        OK, ERROR
     }
 
     private int statusCode;

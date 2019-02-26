@@ -8,7 +8,7 @@
 }
 
 .name,
-.value {
+.item {
     box-sizing: border-box;
     display: inline-block;
     height: 100%;
@@ -23,8 +23,23 @@
     color: white;
 }
 
-.value {
+.item {
     border-radius: 0px 10px 10px 0px;
     border: 1px solid gray;
     color: gray;
+    cursor: pointer;
+}
+
+.dropList {
+    position: absolute;
+    top: 25px;
+    color: gray;
+    z-index: 100;
+}
+
+.dropListItem {
+    margin-left: -4px;
+    padding-left: 4px;
+    border-left: 1px solid gray;
+    cursor: pointer;
 }

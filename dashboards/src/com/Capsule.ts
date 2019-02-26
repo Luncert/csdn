@@ -22,14 +22,13 @@ export default class Capsule extends Component {
 
     render() {
         const { color='gray', name, value, style={} } = this.props;
-        style['borderColor'] = color;
 
         return r('div', {
                 className: styles.root,
                 style: style
             },
             rc('a', 'name', { className: styles.name, style: { backgroundColor: color } }, name),
-            rc('a', 'value', { className: styles.value, style: { color: color } }, value)
+            rc('a', 'value', { className: styles.value, style: { color: color, borderColor: color } }, value)
         );
     }
     

@@ -37,4 +37,13 @@ public class LogControllerTests
             .andReturn();
     }
 
+    @Test
+    public void testGetAll() throws Exception
+    {
+        mock.perform(get("/log"))
+            .andExpect(status().is(200))
+            .andDo(print())
+            .andReturn();
+    }
+
 }

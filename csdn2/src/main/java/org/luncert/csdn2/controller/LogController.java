@@ -9,12 +9,14 @@ import org.luncert.csdn2.model.mongo.LogEntity;
 import org.luncert.csdn2.repository.mongo.LogRepos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 提供查询LogEntity的接口
  */
-@RestController("/log")
+@RestController
+@RequestMapping("/log")
 public class LogController
 {
 

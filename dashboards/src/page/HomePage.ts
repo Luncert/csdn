@@ -8,10 +8,11 @@ import Division from '../com/Division';
 import Input from '../com/Input';
 import Button from '../com/Button';
 import Capsule from '../com/Capsule';
-import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
 import DropBox from '../com/DropBox';
-import * as $ from 'jquery';
+import resource from '../core/Resource';
+import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
 
+const Websocket = <any> require('react-websocket')
 const url = <any> require('../res/img/author.jpg');
 const styles = <any> require('./HomePage.css');
 
@@ -47,87 +48,13 @@ interface State {
     spiderStatus: string;
 }
 
-let testArticleData = [
-    {
-        title: '让人崩溃，程序员和工程师的对决！',
-        summary: '项目要启动，经理要通过工程师定方案，定完以后就要交个程序员去做产品，但是工程师要改一个小细节，程序员可',
-        avatar: url,
-        author: '小可爱程序猿我我',
-        createTime: '4天前',
-        viewCount: 38
-    },
-    {
-        title: '让人崩溃，程序员和工程师的对决！',
-        summary: '项目要启动，经理要通过工程师定方案，定完以后就要交个程序员去做产品，但是工程师要改一个小细节，程序员可',
-        avatar: url,
-        author: '小可爱程序猿我我',
-        createTime: '4天前',
-        viewCount: 38
-    },
-    {
-        title: '让人崩溃，程序员和工程师的对决！',
-        summary: '项目要启动，经理要通过工程师定方案，定完以后就要交个程序员去做产品，但是工程师要改一个小细节，程序员可',
-        avatar: url,
-        author: '小可爱程序猿我我',
-        createTime: '4天前',
-        viewCount: 38
-    },
-    {
-        title: '让人崩溃，程序员和工程师的对决！',
-        summary: '项目要启动，经理要通过工程师定方案，定完以后就要交个程序员去做产品，但是工程师要改一个小细节，程序员可',
-        avatar: url,
-        author: '小可爱程序猿我我',
-        createTime: '4天前',
-        viewCount: 38
-    },
-    {
-        title: '让人崩溃，程序员和工程师的对决！',
-        summary: '项目要启动，经理要通过工程师定方案，定完以后就要交个程序员去做产品，但是工程师要改一个小细节，程序员可',
-        avatar: url,
-        author: '小可爱程序猿我我',
-        createTime: '4天前',
-        viewCount: 38
-    },
-]
-
-let testLogData = [
-    {
-        level: LogLevel.Info,
-        timestamp: 1551108443953,
-        desc: 'spider started',
-        detail: 'no more details'
-    },
-    {
-        level: LogLevel.Warn,
-        timestamp: 1551108443953,
-        desc: 'spider started',
-        detail: 'no more details'
-    },
-    {
-        level: LogLevel.Error,
-        timestamp: 1551108443953,
-        desc: 'spider started',
-        detail: 'no more details'
-    },
-    {
-        level: LogLevel.Info,
-        timestamp: 1551108443953,
-        desc: 'spider started',
-        detail: 'no more details'
-    },
-    {
-        level: LogLevel.Info,
-        timestamp: 1551108443953,
-        desc: 'spider started',
-        detail: 'no more details'
-    },
-];
-
 export default class HomePage extends Component {
 
     props: Props;
     state: State;
     colors: string[] = [];
+    articleList: Article[];
+    logList: Log[];
 
     constructor(props: Props) {
         super(props);
@@ -148,23 +75,52 @@ export default class HomePage extends Component {
             this.colors.push(this.randomColor());
         // 刷新spider状态
         this.refreshSpiderStatus();
+        // 获取Articles
+        resource.get('article', {maxSize: 100})
+            .done((articleList) => {
+                this.articleList = articleList;
+                this.forceUpdate();
+            });
+        // 获取Logs
+        resource.get('log', {maxSize: 100})
+            .done((logList) => {
+                for (let item of logList) {
+                    item.timestamp = parseInt(item.timestamp);
+                }
+                this.logList = logList;
+                this.forceUpdate();
+            });
     }
 
-    refreshSpiderStatus() {
-        $.get()
+    private refreshSpiderStatus() {
+        resource.get('spider.status')
+            .done((rep) =>
+                this.setState({spiderStatus: rep}));
     }
 
-    filterQuery() {
+    private filterQuery() {
         console.log(this.state.filterQuery);
     }
 
-    filterLogLevel(index: number) {
+    private filterLogLevel(index: number) {
         console.log(LOG_LEVEL[index]);
     }
 
-    changeSpider() {
+    private changeSpider() {
         const { spiderStatus } = this.state;
         // TODO: change spider
+    }
+
+    onWSData(data: any) {
+        // TODO: complete receive message
+        console.log(123)
+        data = JSON.parse(data);
+        if (data.type == 'Article') {
+            console.log('new article', data.content);
+        }
+        else if (data.type == 'Log') {
+            console.log('new log', data.content);
+        }
     }
 
     render() {
@@ -172,59 +128,68 @@ export default class HomePage extends Component {
 
         let key = 0;
         // 生成article列表
-        let articleList = [];
-        for (let article of testArticleData) {
-            article = <Article> article;
-            articleList.push(
-                rc('div', key++, null,
-                    rc(Label, 0, {size: 18, color: 'black', bold: true, href: null}, article.title),
-                    rc(Label, 1, null, article.summary),
-                    rc(Avatar, 2, {src: article.avatar, size: 20}),
-                    rc(Label, 3, {size: 12, color: 'rgb(10, 10, 10)'}, article.author),
-                    rc(Label, 4, {size: 12}, article.createTime),
-                    rc(Label, 5, {size: 12, style: {float: 'right'}}, '阅读量：' + article.viewCount),
-                )
-            );
-            articleList.push(rc(Division, key++, {length: '100%'}));
+        let articles = [];
+        if (this.articleList) {
+            for (let article of this.articleList) {
+                article = <Article> article;
+                articles.push(
+                    rc('div', key++, null,
+                        rc(Label, 0, {size: 18, color: 'black', bold: true, href: null}, article.title),
+                        rc(Label, 1, null, article.summary),
+                        rc(Avatar, 2, {src: article.avatar, size: 20}),
+                        rc(Label, 3, {size: 12, color: 'rgb(10, 10, 10)'}, article.author),
+                        rc(Label, 4, {size: 12}, article.createTime),
+                        rc(Label, 5, {size: 12, style: {float: 'right'}}, '阅读量：' + article.viewCount),
+                    )
+                );
+                articles.push(rc(Division, key++, {length: '100%'}));
+            }
+            if (articles.length > 0) articles.pop();
         }
-        if (articleList.length > 0) articleList.pop();
 
         key = 0;
         // 生成log列表
-        let logList = [];
-        for (let log of testLogData) {
-            log = <Log> log;
-            let formattedTime = this.parseTimestamp(log.timestamp);
-            logList.push(
-                rc('div', key++, null,
-                    rc(Label, 0, {fill: true, type: log.level.toLowerCase()}, log.level),
-                    rc(Label, 1, {color: 'black', size: 13}, formattedTime),
-                    rc(Label, 2, {style: {display: 'block'}}, log.desc),
-                    rc(Label, 3, {style: {display: 'block'}}, log.detail),
-                )
-            );
-            logList.push(rc(Division, key++, {length: '100%'}));
+        let logs = [];
+        if (this.logList) {
+            for (let log of this.logList) {
+                log = <Log> log;
+                let formattedTime = this.parseTimestamp(log.timestamp);
+                logs.push(
+                    rc('div', key++, null,
+                        rc(Label, 0, {fill: true, type: log.level.toLowerCase()}, log.level),
+                        rc(Label, 1, {color: 'black', size: 13}, formattedTime),
+                        rc(Label, 2, {style: {display: 'block'}}, log.desc),
+                        rc(Label, 3, {style: {display: 'block'}}, log.detail),
+                    )
+                );
+                logs.push(rc(Division, key++, {length: '100%'}));
+            }
+            if (logs.length > 0) logs.pop();
         }
-        if (logList.length > 0) logList.pop();
 
+        const articleNum = this.articleList ? this.articleList.length : 0;
+        const logNum = this.logList ? this.logList.length : 0;
         return r('div', {className: styles.root},
+            rc(Websocket, 'websocket', {
+                url: 'ws://localhost:8080/websocket',
+                onMessage: this.onWSData.bind(this) }),
             // left side
             rc('div', 'leftSide', { className: styles.listBox },
                 rc('div', 'statistics', { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: testArticleData.length, color: this.colors[0] }),
+                    rc(Capsule, 0, { name: '总数据量', value: articleNum, color: this.colors[0] }),
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, articleList)
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, articles)
             ),
             // right side
             rc('div', 'rightSide', { className: styles.listBox },
                 rc('div', 'statistics', { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: testLogData.length, color: this.colors[0] }),
+                    rc(Capsule, 0, { name: '总数据量', value: logNum, color: this.colors[0] }),
                     rc(DropBox, 1, {
                         name: 'Level筛选', selected: 0,
                         items: LOG_LEVEL, style: { float: 'right' },
                         color: this.colors[1], onChange: this.filterLogLevel.bind(this) })
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, logList)
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, logs)
             ),
             // filter box
             showFilterBox && rc('div', 'filterWrapper', {

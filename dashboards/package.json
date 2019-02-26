@@ -22,6 +22,7 @@
     "node-loader": "^0.6.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
+    "react-websocket": "^2.0.1",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.3.3",
     "typed-css-modules": "^0.3.7",

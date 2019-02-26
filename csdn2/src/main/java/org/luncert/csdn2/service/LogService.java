@@ -45,12 +45,17 @@ public class LogService
 
     private void log(LogLevel level, String desc, String detail)
     {
-        logRepos.save(LogEntity.builder()
+        save(LogEntity.builder()
             .timestamp(String.valueOf(System.currentTimeMillis()))
             .level(level.getName())
             .desc(desc)
             .detail(detail)
             .build());
+    }
+
+    private void save(LogEntity logEntity)
+    {
+        logRepos.save(logEntity);
     }
 
 }

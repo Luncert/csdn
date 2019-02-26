@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.EventListener;
 
 import javax.websocket.OnClose;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.luncert.csdn2.aspect.ArticleReposAspect;
-import org.luncert.csdn2.aspect.LogReposAspect;
+import org.luncert.csdn2.aspect.LogServiceAspect;
 import org.luncert.csdn2.model.mongo.ArticleEntity;
 import org.luncert.csdn2.model.mongo.LogEntity;
 import org.luncert.csdn2.service.EventService;
@@ -19,12 +17,16 @@ import org.luncert.csdn2.service.LogService;
 import org.luncert.csdn2.util.NormalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-// https://blog.csdn.net/zhangdehua678/article/details/78913839/ 
+// https://blog.csdn.net/zhangdehua678/article/details/78913839/
+// https://blog.csdn.net/tornadojava/article/details/78781474
 // 如何实现订阅模式：使用aop或者其他，在save entity的时候，trigger事件，通知到WebSocketServer，然后分发给订阅了的客户端，这意味着还要用session
-@ServerEndpoint(value = "/websocket")
 @Component
-public class WebSocketServer
+public class WebSocketHandler extends TextWebSocketHandler
 {
 
     @Autowired
@@ -33,7 +35,7 @@ public class WebSocketServer
     @Autowired
     private LogService logService;
 
-    private Session session;
+    private WebSocketSession session;
 
     private EventListener logEntityListener, articleEntityListener;
 
@@ -42,7 +44,11 @@ public class WebSocketServer
 
         public void onSave(LogEntity logEntity)
         {
-            sendMessage(JSON.toJSONString(logEntity));
+            System.out.println(222);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", "Article");
+            jsonObject.put("content", JSON.toJSON(logEntity));
+            sendMessage(jsonObject.toJSONString());
         }
 
     }
@@ -52,7 +58,10 @@ public class WebSocketServer
 
         public void onSave(ArticleEntity articleEntity)
         {
-            sendMessage(JSON.toJSONString(articleEntity));
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", "Log");
+            jsonObject.put("content", JSON.toJSON(articleEntity));
+            sendMessage(jsonObject.toJSONString());
         }
 
     }
@@ -60,28 +69,29 @@ public class WebSocketServer
     private void sendMessage(String message)
     {
         try {
-            this.session.getBasicRemote().sendText(message);
+            this.session.sendMessage(new TextMessage(message));
         } catch (IOException e) {
             logService.error("exception on WebSocketServer.sendMessage",
                 NormalUtil.throwableToString(e));
         }
     }
 
-    @OnOpen
-    public void onOpen(Session session)
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception
     {
+        super.afterConnectionEstablished(session);
         logEntityListener = new LogEntityListener();
         articleEntityListener = new ArticleEntityListener();
         this.session = session;
-        eventService.register(LogReposAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
+        eventService.register(LogServiceAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
         eventService.register(ArticleReposAspect.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
     }
 
     @OnClose
-    public void onClose()
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception
     {
-        this.session = null;
-        eventService.unregister(LogReposAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
+        super.afterConnectionClosed(session, status);
+        eventService.unregister(LogServiceAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
         eventService.unregister(ArticleReposAspect.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
     }
 

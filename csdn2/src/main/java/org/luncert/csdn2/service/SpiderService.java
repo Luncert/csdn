@@ -40,6 +40,8 @@ public class SpiderService
     @Autowired
     private SpiderProcessRepos spiderProcessRepos;
 
+    private volatile Status status = Status.Stopped;
+
     private boolean startedOnce = false;
 
     /**
@@ -50,6 +52,12 @@ public class SpiderService
 
     public void start()
     {
+        if (status != Status.Stopped) {
+            logService.warn("spider is " + status.name().toLowerCase() + ", start is not allowed");
+            return;
+        }
+
+        status = Status.Starting;
         // 为每一个category都创建一个线程运行爬虫
         wannaStop = false;
         for (Category category : Category.categories) {
@@ -112,16 +120,24 @@ public class SpiderService
         }
         // mark startedOnce
         startedOnce = true;
+        status = Status.Running;
     }
 
     public boolean stop()
     {
+        if (status != Status.Running) {
+            logService.warn("spider is " + status.name().toLowerCase() + ", stop is not allowed");
+            return false;
+        }
+
+        status = Status.Stopping;
         wannaStop = true;
         try {
             while (true) {
                 try {
                     // 无限等待，并且返回false时抛出异常
                     assert threadPool.awaitTermination(0, TimeUnit.SECONDS) == true;
+                    status = Status.Stopped;
                     return true;
                 } catch (InterruptedException e) {
                     // 如果是被中断等待，则中心进入等待
@@ -136,6 +152,14 @@ public class SpiderService
                     NormalUtil.throwableToString(e));
             return false;
         }
+    }
+
+    public Status status() {
+        return status;
+    }
+
+    public enum Status {
+        Starting, Running, Stopping, Stopped
     }
 
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-public class LogReposAspect
+public class LogServiceAspect
 {
 
     @Autowired
@@ -17,10 +17,9 @@ public class LogReposAspect
 
     public static final String ON_SAVE_LOG_ENTITY = "OnSaveLogEntity";
 
-    private static final String PACKAGE_NAME = "org.luncert.csdn2.repository.mongo.LogRepos";
-
-    @Before("execution(public * " + PACKAGE_NAME + ".save()) and args(logEntity)")
+    @Before(value="execution(* org.luncert.csdn2.service.LogService.save(..)) && args(logEntity)")
     public void beforeSave(LogEntity logEntity) {
+        System.out.println(111);
         eventService.submit(ON_SAVE_LOG_ENTITY, logEntity);
     }
 

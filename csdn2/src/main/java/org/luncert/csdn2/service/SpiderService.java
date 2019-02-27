@@ -10,7 +10,6 @@ import org.luncert.csdn2.model.normal.Article;
 import org.luncert.csdn2.model.normal.ArticleRef;
 import org.luncert.csdn2.model.normal.Category;
 import org.luncert.csdn2.repository.h2.SpiderProcessRepos;
-import org.luncert.csdn2.repository.mongo.ArticleRepos;
 import org.luncert.csdn2.service.ArticleService;
 import org.luncert.csdn2.service.LogService;
 import org.luncert.csdn2.service.ArticleService.ArticleRefs;
@@ -33,9 +32,6 @@ public class SpiderService
 
     @Autowired
     private LogService logService;
-
-    @Autowired
-    private ArticleRepos articleRepos;
 
     @Autowired
     private SpiderProcessRepos spiderProcessRepos;
@@ -91,7 +87,7 @@ public class SpiderService
                                         .articleId(ref.getId()).authorId(ref.getUserName())
                                         .readCount(article.getReadCount()).tags(article.getTags())
                                         .copyright(article.getCopyright()).content(article.getContent()).build();
-                                articleRepos.save(articleEntity);
+                                articleService.save(articleEntity);
                             } catch (Exception e) {
                                 // save log to Mongodb
                                 logService.error("@SpiderService.start.getArticle(" + ref.getUrl() + ")",

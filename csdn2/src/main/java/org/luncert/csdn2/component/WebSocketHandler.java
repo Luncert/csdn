@@ -8,10 +8,9 @@ import javax.websocket.OnClose;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import org.luncert.csdn2.aspect.ArticleReposAspect;
-import org.luncert.csdn2.aspect.LogServiceAspect;
 import org.luncert.csdn2.model.mongo.ArticleEntity;
 import org.luncert.csdn2.model.mongo.LogEntity;
+import org.luncert.csdn2.service.ArticleService;
 import org.luncert.csdn2.service.EventService;
 import org.luncert.csdn2.service.LogService;
 import org.luncert.csdn2.util.NormalUtil;
@@ -39,27 +38,26 @@ public class WebSocketHandler extends TextWebSocketHandler
 
     private EventListener logEntityListener, articleEntityListener;
 
-    class LogEntityListener implements EventListener
+    public class LogEntityListener implements EventListener
     {
 
         public void onSave(LogEntity logEntity)
         {
-            System.out.println(222);
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("type", "Article");
+            jsonObject.put("type", "Log");
             jsonObject.put("content", JSON.toJSON(logEntity));
             sendMessage(jsonObject.toJSONString());
         }
 
     }
 
-    class ArticleEntityListener implements EventListener
+    public class ArticleEntityListener implements EventListener
     {
 
         public void onSave(ArticleEntity articleEntity)
         {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("type", "Log");
+            jsonObject.put("type", "Article");
             jsonObject.put("content", JSON.toJSON(articleEntity));
             sendMessage(jsonObject.toJSONString());
         }
@@ -83,16 +81,16 @@ public class WebSocketHandler extends TextWebSocketHandler
         logEntityListener = new LogEntityListener();
         articleEntityListener = new ArticleEntityListener();
         this.session = session;
-        eventService.register(LogServiceAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
-        eventService.register(ArticleReposAspect.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
+        eventService.register(LogService.ON_SAVE_LOG_ENTITY, logEntityListener);
+        eventService.register(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
     }
 
     @OnClose
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception
     {
         super.afterConnectionClosed(session, status);
-        eventService.unregister(LogServiceAspect.ON_SAVE_LOG_ENTITY, logEntityListener);
-        eventService.unregister(ArticleReposAspect.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
+        eventService.unregister(LogService.ON_SAVE_LOG_ENTITY, logEntityListener);
+        eventService.unregister(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
     }
 
 }

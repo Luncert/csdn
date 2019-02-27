@@ -10,11 +10,14 @@ import com.alibaba.fastjson.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.luncert.csdn2.model.mongo.ArticleEntity;
 import org.luncert.csdn2.model.normal.Article;
 import org.luncert.csdn2.model.normal.ArticleRef;
 import org.luncert.csdn2.model.normal.Category;
+import org.luncert.csdn2.repository.mongo.ArticleRepos;
 import org.luncert.csdn2.util.Request;
 import org.luncert.csdn2.util.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import lombok.Getter;
@@ -105,6 +108,20 @@ public class ArticleService
             this.refs = refs;
             this.shownOffset = shownOffset;
         }
+    }
+    
+    public static final String ON_SAVE_ARTICLE_ENTITY = "OnSaveArticleEntity";
+
+    @Autowired
+    private EventService eventService;
+
+    @Autowired
+    private ArticleRepos articleRepos;
+
+    public void save(ArticleEntity articleEntity)
+    {
+        eventService.submit(ON_SAVE_ARTICLE_ENTITY, articleEntity);
+        articleRepos.save(articleEntity);
     }
 
 }

@@ -1,5 +1,5 @@
 
-import { r, rc } from '../util/react-helper';
+import { r, rc, ReactType } from '../util/react-helper';
 import { Component, Props } from '../com/Component';
 import ItemList from '../com/ItemList';
 import Avatar from '../com/Avatar';
@@ -53,8 +53,8 @@ export default class HomePage extends Component {
     props: Props;
     state: State;
     colors: string[] = [];
-    articleList: Article[];
     logList: Log[];
+    articleList: Article[];
 
     constructor(props: Props) {
         super(props);
@@ -113,13 +113,15 @@ export default class HomePage extends Component {
 
     onWSData(data: any) {
         // TODO: complete receive message
-        console.log(123)
         data = JSON.parse(data);
         if (data.type == 'Article') {
-            console.log('new article', data.content);
+            this.articleList.push(data.content);
+            this.forceUpdate();
         }
         else if (data.type == 'Log') {
-            console.log('new log', data.content);
+            data.content.timestamp = parseInt(data.content.timestamp);
+            this.logList.push(data.content);
+            this.forceUpdate();
         }
     }
 
@@ -169,7 +171,7 @@ export default class HomePage extends Component {
 
         const articleNum = this.articleList ? this.articleList.length : 0;
         const logNum = this.logList ? this.logList.length : 0;
-        return r('div', {className: styles.root},
+        return r('div', {className: styles.root },
             rc(Websocket, 'websocket', {
                 url: 'ws://localhost:8080/websocket',
                 onMessage: this.onWSData.bind(this) }),
@@ -178,7 +180,7 @@ export default class HomePage extends Component {
                 rc('div', 'statistics', { className: styles.statistics },
                     rc(Capsule, 0, { name: '总数据量', value: articleNum, color: this.colors[0] }),
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, articles)
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)', scrollToBottom: true }, articles)
             ),
             // right side
             rc('div', 'rightSide', { className: styles.listBox },
@@ -189,7 +191,7 @@ export default class HomePage extends Component {
                         items: LOG_LEVEL, style: { float: 'right' },
                         color: this.colors[1], onChange: this.filterLogLevel.bind(this) })
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)' }, logs)
+                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)', scrollToBottom: true }, logs)
             ),
             // filter box
             showFilterBox && rc('div', 'filterWrapper', {

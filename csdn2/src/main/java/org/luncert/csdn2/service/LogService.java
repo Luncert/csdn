@@ -10,8 +10,13 @@ import org.springframework.stereotype.Service;
 public class LogService
 {
 
+    public static final String ON_SAVE_LOG_ENTITY = "OnSaveLogEntity";
+
     @Autowired
     private LogRepos logRepos;
+
+    @Autowired
+    private EventService eventService;
 
     public void info(String desc)
     {
@@ -55,6 +60,8 @@ public class LogService
 
     private void save(LogEntity logEntity)
     {
+        // 发布事件，通知WebSocketHandler
+        eventService.submit(ON_SAVE_LOG_ENTITY, logEntity);
         logRepos.save(logEntity);
     }
 

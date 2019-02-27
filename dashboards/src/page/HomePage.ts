@@ -1,5 +1,5 @@
 
-import { r, rc, ReactType } from '../util/react-helper';
+import { r, rc } from '../util/react-helper';
 import { Component, Props } from '../com/Component';
 import ItemList from '../com/ItemList';
 import Avatar from '../com/Avatar';
@@ -9,12 +9,21 @@ import Input from '../com/Input';
 import Button from '../com/Button';
 import Capsule from '../com/Capsule';
 import DropBox from '../com/DropBox';
-import resource from '../core/Resource';
+import resource, { Page } from '../core/Resource';
 import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
+import Loader from '../com/Loader';
 
 const Websocket = <any> require('react-websocket')
 const url = <any> require('../res/img/author.jpg');
 const styles = <any> require('./HomePage.css');
+
+const LOG_LEVEL = ['Info', 'Warn', 'Error'];
+
+const SpiderStatus = {
+    Starting: 'Starting', Running: 'Running', Stopping: 'Stopping', Stopped: 'Stopped'
+}
+
+const PAGE_SIZE = 40;
 
 interface Article {
     title: string;
@@ -25,12 +34,6 @@ interface Article {
     viewCount: number;
 }
 
-const LogLevel = {
-    Info: 'Info', Warn: 'Warn', Error: 'Error'
-}
-
-const LOG_LEVEL = ['Info', 'Warn', 'Error'];
-
 interface Log {
     level: string;
     timestamp: number;
@@ -38,14 +41,14 @@ interface Log {
     detail: string;
 }
 
-const SpiderStatus = {
-    Starting: 'Starting', Running: 'Running', Stopping: 'Stopping', Stopped: 'Stopped'
-}
-
 interface State {
     showFilterBox: boolean;
     filterQuery: string;
     spiderStatus: string;
+    logCount: number;
+    articleCount: number;
+    loadingLogs: boolean;
+    loadingArticles: boolean;
 }
 
 export default class HomePage extends Component {
@@ -53,15 +56,25 @@ export default class HomePage extends Component {
     props: Props;
     state: State;
     colors: string[] = [];
-    logList: Log[];
-    articleList: Article[];
+
+    logPage = 0;
+    logTotalPage = 0;
+    logList: Log[] = [];
+
+    articlePage = 0;
+    articleTotalPage = 0;
+    articleList: Article[] = [];
 
     constructor(props: Props) {
         super(props);
         this.state = {
             showFilterBox: false,
             filterQuery: null,
-            spiderStatus: SpiderStatus.Stopped
+            spiderStatus: SpiderStatus.Stopped,
+            logCount: 0,
+            articleCount: 0,
+            loadingArticles: false,
+            loadingLogs: false,
         };
     }
 
@@ -75,21 +88,93 @@ export default class HomePage extends Component {
             this.colors.push(this.randomColor());
         // 刷新spider状态
         this.refreshSpiderStatus();
-        // 获取Articles
-        resource.get('article', {page: 0, size: 30})
-            .done((articleList) => {
-                this.articleList = articleList;
+
+        resource.get('article.count').done((articleCount) => {
+            this.articleTotalPage = Math.floor(articleCount / PAGE_SIZE)
+                + (articleCount % PAGE_SIZE == 0 ? 0 : 1);
+            this.loadMoreArticles();
+            this.setState({articleCount: articleCount});
+        });
+
+        resource.get('log.count').done((logCount) => {
+            this.logTotalPage = Math.floor(logCount / PAGE_SIZE)
+                + (logCount % PAGE_SIZE == 0 ? 0 : 1);
+            this.loadMoreLogs();
+            this.setState({logCount: logCount});
+        });
+    }
+
+    private loadMoreArticles() {
+        if (this.articlePage < this.articleTotalPage) {
+            this.setState({loadingLogs: true});
+            window.onmousewheel = () => false; // 禁用滚动
+            resource.get('article', {page: this.articlePage, size: PAGE_SIZE})
+            .done((page: Page) => {
+                this.articlePage++;
+                // 将请求到的数据添加到list头部
+                this.articleList = this.articleList.concat(page.content);
+
+                this.setState({loadingArticles: false});
+                window.onmousewheel = null;
                 this.forceUpdate();
             });
-        // 获取Logs
-        resource.get('log', {page: 0, size: 30})
-            .done((logList) => {
-                for (let item of logList) {
-                    item.timestamp = parseInt(item.timestamp);
-                }
-                this.logList = logList;
+        }
+    }
+
+    private loadMoreLogs() {
+        if (this.logPage < this.logTotalPage) {
+            this.setState({loadingLogs: true});
+            window.onmousewheel = () => false; // 禁用滚动
+            resource.get('log', {page: this.logPage, size: PAGE_SIZE})
+                .done((page: Page) => {
+                    this.logPage++;
+                    // 将timestamp字段转换为number类型
+                    let logList = <any[]> page.content;
+                    logList.forEach((item) =>
+                        item.timestamp = parseInt(item.timestamp));
+                    // 将请求到的数据添加到list头部
+                    this.logList = this.logList.concat(logList);
+    
+                    this.setState({loadingLogs: false});
+                    window.onmousewheel = null;
+                    this.forceUpdate();
+                });
+        }
+    }
+
+    /**
+     * 处理即时推送来的消息
+     * 消息类型有：Article, Article.Count, Log, Log.Count, Spider.Status
+     * @param data 
+     */
+    private onWSData(data: any) {
+        data = JSON.parse(data);
+        const { type, content } = data;
+        switch (type) {
+            case 'Article': {
+                this.articleList.unshift(content); // 头部插入
                 this.forceUpdate();
-            });
+                break;
+            }
+            case 'Article.Count': {
+                this.setState({articleCount: content});
+                break;
+            }
+            case 'Log': {
+                content.timestamp = parseInt(content.timestamp);
+                this.logList.unshift(content); // 头部插入
+                this.forceUpdate();
+                break;
+            }
+            case 'Log.Count': {
+                this.setState({logCoutn: content});
+                break;
+            }
+            case 'Spider.Status': {
+                this.setState({spiderStatus: content});
+                break;
+            }
+        }
     }
 
     private refreshSpiderStatus() {
@@ -111,22 +196,11 @@ export default class HomePage extends Component {
         // TODO: change spider
     }
 
-    onWSData(data: any) {
-        // TODO: complete receive message
-        data = JSON.parse(data);
-        if (data.type == 'Article') {
-            this.articleList.push(data.content);
-            this.forceUpdate();
-        }
-        else if (data.type == 'Log') {
-            data.content.timestamp = parseInt(data.content.timestamp);
-            this.logList.push(data.content);
-            this.forceUpdate();
-        }
-    }
-
     render() {
-        const { showFilterBox, spiderStatus } = this.state;
+        const { showFilterBox, spiderStatus,
+            articleCount, logCount,
+            loadingArticles, loadingLogs
+        } = this.state;
 
         let key = 0;
         // 生成article列表
@@ -169,8 +243,6 @@ export default class HomePage extends Component {
             if (logs.length > 0) logs.pop();
         }
 
-        const articleNum = this.articleList ? this.articleList.length : 0;
-        const logNum = this.logList ? this.logList.length : 0;
         return r('div', {className: styles.root },
             rc(Websocket, 'websocket', {
                 url: 'ws://localhost:8080/websocket',
@@ -178,20 +250,28 @@ export default class HomePage extends Component {
             // left side
             rc('div', 'leftSide', { className: styles.listBox },
                 rc('div', 'statistics', { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: articleNum, color: this.colors[0] }),
+                    rc(Capsule, 0, { name: '总数据量', value: articleCount, color: '#FA8235' }),
+                    rc(Capsule, 1, { name: '已加载', value: this.articleList.length, color: '#BA82F5' }),
+                    loadingArticles && rc(Loader, 2, { size: 12 }),
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)', scrollToBottom: true }, articles)
+                rc(ItemList, 1, {
+                    width: '100%', height: 'calc(100% - 30px)',
+                    onScrollOverBottom: this.loadMoreArticles.bind(this) }, articles)
             ),
             // right side
             rc('div', 'rightSide', { className: styles.listBox },
                 rc('div', 'statistics', { className: styles.statistics },
-                    rc(Capsule, 0, { name: '总数据量', value: logNum, color: this.colors[0] }),
-                    rc(DropBox, 1, {
+                    rc(Capsule, 0, { name: '总数据量', value: logCount, color: '#FA8235' }),
+                    rc(Capsule, 1, { name: '已加载', value: this.logList.length, color: '#BA82F5' }),
+                    loadingLogs && rc(Loader, 2, { size: 12 }),
+                    rc(DropBox, 3, {
                         name: 'Level筛选', selected: 0,
                         items: LOG_LEVEL, style: { float: 'right' },
-                        color: this.colors[1], onChange: this.filterLogLevel.bind(this) })
+                        color: '#092F5F', onChange: this.filterLogLevel.bind(this) })
                 ),
-                rc(ItemList, 1, { width: '100%', height: 'calc(100% - 30px)', scrollToBottom: true }, logs)
+                rc(ItemList, 1, {
+                    width: '100%', height: 'calc(100% - 30px)',
+                    onScrollOverBottom: this.loadMoreLogs.bind(this) }, logs)
             ),
             // filter box
             showFilterBox && rc('div', 'filterWrapper', {

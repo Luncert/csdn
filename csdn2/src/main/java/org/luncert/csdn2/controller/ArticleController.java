@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,10 +38,10 @@ public class ArticleController
     }
 
     @GetMapping
-    public Page<ArticleEntity> articles(@RequestParam(name="page", required=false) int page,
-        @RequestParam(name="size", required=false) int size)
+    public Page<ArticleEntity> articles(@RequestParam(name="page") int page,
+        @RequestParam(name="size") int size)
     {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "timestamp");
         return repos.findAll(pageable);
     }
 

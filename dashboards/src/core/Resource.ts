@@ -1,6 +1,17 @@
 
 import * as $ from 'jquery';
 
+interface Page {
+    totalPages: number;
+    totalElements: number;
+    last: boolean;
+    size: number;
+    number: number;
+    first: boolean;
+    empty: boolean;
+    content: any;
+}
+
 class Resource {
 
     urlBase = 'http://localhost:8080/';
@@ -45,3 +56,7 @@ class Resource {
 }
 
 export default new Resource();
+
+export {
+    Page
+}

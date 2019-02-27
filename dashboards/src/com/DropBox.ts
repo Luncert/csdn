@@ -13,6 +13,7 @@ interface CusProps extends Props {
 }
 
 interface State {
+    selected: number;
     showList: boolean;
 }
 /**
@@ -31,21 +32,22 @@ export default class DropBox extends Component {
     constructor(props: CusProps) {
         super(props);
         this.state = {
+            selected: this.props.selected || 0,
             showList: false
         };
     }
 
     render() {
-        const { color='gray', name, selected, items=[], onChange, style={} } = this.props;
-        const { showList } = this.state;
+        const { color='gray', name, items=[], onChange, style={} } = this.props;
+        const { selected, showList } = this.state;
 
-        let curItem = selected == 0 || selected > 0 ? items[selected] : '';
+        let curItem = items[selected];
 
         let dropList = [];
         items.forEach((item, index) =>
             dropList.push(rc('div', item, {
                 className: styles.dropListItem,
-                onClick: () => { this.setState({showList: false}); onChange(index); }
+                onClick: () => { this.setState({selected: index, showList: false}); onChange(index); }
             }, item)));
 
         return r('div', {className: styles.root, style: style},

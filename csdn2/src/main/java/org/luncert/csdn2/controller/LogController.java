@@ -8,6 +8,7 @@ import org.luncert.csdn2.repository.mongo.LogRepos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,10 +28,10 @@ public class LogController
     private LogRepos repos;
 
     @GetMapping
-    public Page<LogEntity> logs(@RequestParam(name="page", required=false) int page,
-        @RequestParam(name="size", required=false) int size)
+    public Page<LogEntity> logs(@RequestParam(name="page") int page,
+        @RequestParam(name="size") int size)
     {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "timestamp");
         return repos.findAll(pageable);
     }
 

@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.luncert.csdn2.model.mongo.ArticleEntity;
+import org.luncert.csdn2.model.mongo.Article;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -21,13 +21,12 @@ public class ArticleReposTests
     @Test
     public void testSave()
     {
-        ArticleEntity entity = ArticleEntity.builder()
+        Article entity = Article.builder()
             .title("Java GC")
             .createTime(new Date().toString())
             .author("Luncert")
             .articleId("90123809813")
-            .authorId("i092312")
-            .readCount(302)
+            .readCount("302")
             .tags(new String[]{"Java", "GC"})
             .content("blabla.....")
             .build();

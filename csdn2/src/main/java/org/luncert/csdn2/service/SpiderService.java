@@ -5,14 +5,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.luncert.csdn2.model.h2.SpiderProcess;
-import org.luncert.csdn2.model.mongo.ArticleEntity;
-import org.luncert.csdn2.model.normal.Article;
-import org.luncert.csdn2.model.normal.ArticleRef;
 import org.luncert.csdn2.model.normal.Category;
 import org.luncert.csdn2.repository.h2.SpiderProcessRepos;
 import org.luncert.csdn2.service.ArticleService;
 import org.luncert.csdn2.service.LogService;
-import org.luncert.csdn2.service.ArticleService.ArticleRefs;
 import org.luncert.csdn2.util.NormalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,9 +30,12 @@ public class SpiderService
     private LogService logService;
 
     @Autowired
+    private EventService eventService;
+
+    @Autowired
     private SpiderProcessRepos spiderProcessRepos;
 
-    private volatile Status status = Status.Stopped;
+    private Status status = Status.Stopped;
 
     private boolean startedOnce = false;
 
@@ -49,11 +48,11 @@ public class SpiderService
     public void start()
     {
         if (status != Status.Stopped) {
-            logService.warn("spider is " + status.name().toLowerCase() + ", start is not allowed");
+            logService.warn("spider is " + status.name() + ", start is not allowed");
             return;
         }
 
-        status = Status.Starting;
+        changeStatus(Status.Starting);
         // 为每一个category都创建一个线程运行爬虫
         wannaStop = false;
         for (Category category : Category.categories) {
@@ -73,28 +72,12 @@ public class SpiderService
                 while (errorTime < 3) {
                     // 持久化当前进度，用于恢复运行
                     if (wannaStop) {
-                        spiderProcessRepos.save(new SpiderProcess(category, shownOffset));
+                        spiderProcessRepos.save(
+                            new SpiderProcess(category, shownOffset));
                         break;
                     }
                     try {
-                        ArticleRefs refs = articleService.getMoreArticle(category, shownOffset);
-                        for (ArticleRef ref : refs.getRefs()) {
-                            try {
-                                // save article to Mongodb
-                                Article article = articleService.getArticle(ref.getUrl());
-                                ArticleEntity articleEntity = ArticleEntity.builder().title(article.getTitle())
-                                        .createTime(article.getCreateTime()).author(article.getAuthor())
-                                        .articleId(ref.getId()).authorId(ref.getUserName())
-                                        .readCount(article.getReadCount()).tags(article.getTags())
-                                        .copyright(article.getCopyright()).content(article.getContent()).build();
-                                articleService.save(articleEntity);
-                            } catch (Exception e) {
-                                // save log to Mongodb
-                                logService.error("@SpiderService.start.getArticle(" + ref.getUrl() + ")",
-                                        NormalUtil.throwableToString(e));
-                            }
-                        }
-                        shownOffset = refs.getShownOffset();
+                        shownOffset = articleService.getMoreArticle(category, shownOffset);
                         errorTime = 0;
                     } catch (Exception e) {
                         // save log to Mongodb
@@ -102,6 +85,9 @@ public class SpiderService
                                 NormalUtil.throwableToString(e));
                         errorTime++;
                     }
+                    try {
+                        Thread.sleep(1500);
+                    } catch (Exception e) {}
                 }
                 // 退出日志
                 if (errorTime == 3) {
@@ -116,7 +102,7 @@ public class SpiderService
         }
         // mark startedOnce
         startedOnce = true;
-        status = Status.Running;
+        changeStatus(Status.Running);
     }
 
     public boolean stop()
@@ -126,14 +112,14 @@ public class SpiderService
             return false;
         }
 
-        status = Status.Stopping;
+        changeStatus(Status.Stopping);
         wannaStop = true;
         try {
             while (true) {
                 try {
                     // 无限等待，并且返回false时抛出异常
                     assert threadPool.awaitTermination(0, TimeUnit.SECONDS) == true;
-                    status = Status.Stopped;
+                    changeStatus(Status.Stopped);
                     return true;
                 } catch (InterruptedException e) {
                     // 如果是被中断等待，则中心进入等待
@@ -148,6 +134,16 @@ public class SpiderService
                     NormalUtil.throwableToString(e));
             return false;
         }
+    }
+
+    public static final String ON_CHANGE_STATUS = "OnChangeStatus";
+
+    /**
+     * 同步更新状态
+     */
+    private synchronized void changeStatus(Status newStatus) {
+        eventService.submit(ON_CHANGE_STATUS, newStatus);
+        status = newStatus;
     }
 
     public Status status() {

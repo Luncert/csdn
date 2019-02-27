@@ -12,9 +12,9 @@ import DropBox from '../com/DropBox';
 import resource, { Page } from '../core/Resource';
 import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
 import Loader from '../com/Loader';
+import TopPanel from '../com/TopPanel';
 
 const Websocket = <any> require('react-websocket')
-const url = <any> require('../res/img/author.jpg');
 const styles = <any> require('./HomePage.css');
 
 const LOG_LEVEL = ['Info', 'Warn', 'Error'];
@@ -31,7 +31,7 @@ interface Article {
     avatar: string;
     author: string;
     createTime: string;
-    viewCount: number;
+    readCount: number;
 }
 
 interface Log {
@@ -104,9 +104,12 @@ export default class HomePage extends Component {
         });
     }
 
+    /**
+     * 加载更多article数据，并设置loading动画
+     */
     private loadMoreArticles() {
         if (this.articlePage < this.articleTotalPage) {
-            this.setState({loadingLogs: true});
+            this.setState({loadingArticles: true});
             window.onmousewheel = () => false; // 禁用滚动
             resource.get('article', {page: this.articlePage, size: PAGE_SIZE})
             .done((page: Page) => {
@@ -121,6 +124,9 @@ export default class HomePage extends Component {
         }
     }
 
+    /**
+     * 加载更多log数据，并设置loading动画
+     */
     private loadMoreLogs() {
         if (this.logPage < this.logTotalPage) {
             this.setState({loadingLogs: true});
@@ -144,7 +150,7 @@ export default class HomePage extends Component {
 
     /**
      * 处理即时推送来的消息
-     * 消息类型有：Article, Article.Count, Log, Log.Count, Spider.Status
+     * 消息类型有：Article, Log, Spider.Status
      * @param data 
      */
     private onWSData(data: any) {
@@ -153,21 +159,15 @@ export default class HomePage extends Component {
         switch (type) {
             case 'Article': {
                 this.articleList.unshift(content); // 头部插入
+                this.state.articleCount++;
                 this.forceUpdate();
-                break;
-            }
-            case 'Article.Count': {
-                this.setState({articleCount: content});
                 break;
             }
             case 'Log': {
                 content.timestamp = parseInt(content.timestamp);
                 this.logList.unshift(content); // 头部插入
+                this.state.logCount++;
                 this.forceUpdate();
-                break;
-            }
-            case 'Log.Count': {
-                this.setState({logCoutn: content});
                 break;
             }
             case 'Spider.Status': {
@@ -177,23 +177,40 @@ export default class HomePage extends Component {
         }
     }
 
+    /**
+     * 获取Spider状态
+     */
     private refreshSpiderStatus() {
         resource.get('spider.status')
             .done((rep) =>
                 this.setState({spiderStatus: rep}));
     }
 
+    /**
+     * TODO: to complete
+     */
     private filterQuery() {
         console.log(this.state.filterQuery);
     }
 
+    /**
+     * TODO: to complete
+     * @param index 
+     */
     private filterLogLevel(index: number) {
         console.log(LOG_LEVEL[index]);
     }
 
     private changeSpider() {
         const { spiderStatus } = this.state;
-        // TODO: change spider
+        if (spiderStatus == SpiderStatus.Running) {
+            // 尝试停止spider
+            resource.get('spider.stop');
+        }
+        else if (spiderStatus == SpiderStatus.Stopped) {
+            // 尝试启动spider
+            resource.get('spider.start');
+        }
     }
 
     render() {
@@ -211,11 +228,11 @@ export default class HomePage extends Component {
                 articles.push(
                     rc('div', key++, null,
                         rc(Label, 0, {size: 18, color: 'black', bold: true, href: null}, article.title),
-                        rc(Label, 1, null, article.summary),
+                        rc(Label, 1, {noWrap: true}, article.summary),
                         rc(Avatar, 2, {src: article.avatar, size: 20}),
                         rc(Label, 3, {size: 12, color: 'rgb(10, 10, 10)'}, article.author),
                         rc(Label, 4, {size: 12}, article.createTime),
-                        rc(Label, 5, {size: 12, style: {float: 'right'}}, '阅读量：' + article.viewCount),
+                        rc(Label, 5, {size: 12, style: {float: 'right'}}, '阅读量：' + article.readCount),
                     )
                 );
                 articles.push(rc(Division, key++, {length: '100%'}));
@@ -231,11 +248,11 @@ export default class HomePage extends Component {
                 log = <Log> log;
                 let formattedTime = this.parseTimestamp(log.timestamp);
                 logs.push(
-                    rc('div', key++, null,
+                    rc('div', key++, { onClick: () => { console.log(log.detail) } },
                         rc(Label, 0, {fill: true, type: log.level.toLowerCase()}, log.level),
                         rc(Label, 1, {color: 'black', size: 13}, formattedTime),
                         rc(Label, 2, {style: {display: 'block'}}, log.desc),
-                        rc(Label, 3, {style: {display: 'block'}}, log.detail),
+                        rc(Label, 3, {noWrap: true, style: {display: 'block'}}, log.detail),
                     )
                 );
                 logs.push(rc(Division, key++, {length: '100%'}));
@@ -244,6 +261,7 @@ export default class HomePage extends Component {
         }
 
         return r('div', {className: styles.root },
+            rc(TopPanel, 'detailPanel', null, 'asddsd'), // TODO:
             rc(Websocket, 'websocket', {
                 url: 'ws://localhost:8080/websocket',
                 onMessage: this.onWSData.bind(this) }),

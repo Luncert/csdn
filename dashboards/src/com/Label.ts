@@ -13,6 +13,7 @@ interface CusProps extends Props {
     selected: boolean;
     bold: boolean;
     href: string;
+    noWrap: boolean;
 }
 
 const LABEL_TYPE = { INFO: 'info', WARN: 'warn', ERROR: 'error' };
@@ -30,6 +31,7 @@ export {
  * * selected: 文字是否可以选中，默认true
  * * bold: 是否加粗，默认false
  * * href: 绑定链接，并改变光标样式
+ * * noWrap: 不换行，默认false
  */
 export default class Label extends Component {
 
@@ -42,9 +44,12 @@ export default class Label extends Component {
             fill=false,
             selected=true,
             bold=false,
-            href,
+            href, noWrap=false,
             style={}, children } = this.props;
 
+        let className = st.join(styles.label, styles[type]);
+        if (fill) className = st.join(className, styles.fill);
+        if (noWrap) className = st.join(className, styles.noWrap);
         style['fontSize'] = size + 'px';
         if (color) {
             style['color'] = color;
@@ -58,7 +63,7 @@ export default class Label extends Component {
         style['userSelect'] = selected ? 'auto' : 'none';
 
         return r('div', {
-            className: st.join(styles.label, styles[type], fill ? styles.fill : ''),
+            className: className,
             onClick: () => href && window.open(href),
             style: style}, children);
     }

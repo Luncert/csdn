@@ -34,11 +34,11 @@ export default class ItemList extends Component {
         let beforeScrollTop = this.root.scrollTop;
         this.root.onscroll = () => {
             let direction = this.root.scrollTop - beforeScrollTop;
-            if (direction > 0 && this.root.scrollTop >=
+            if (direction > 0 && Math.ceil(this.root.scrollTop) >=
                 this.root.scrollHeight - this.root.clientHeight) {
                 onScrollOverBottom && onScrollOverBottom();
             }
-            else if (direction < 0 && this.root.scrollTop == 0) {
+            else if (direction < 0 && Math.ceil(this.root.scrollTop) == 0) {
                 onScrollOverTop && onScrollOverTop();
             }
             beforeScrollTop = this.root.scrollTop;

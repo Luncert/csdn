@@ -8,11 +8,13 @@ import javax.websocket.OnClose;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import org.luncert.csdn2.model.mongo.ArticleEntity;
-import org.luncert.csdn2.model.mongo.LogEntity;
+import org.luncert.csdn2.model.mongo.Article;
+import org.luncert.csdn2.model.mongo.Log;
 import org.luncert.csdn2.service.ArticleService;
 import org.luncert.csdn2.service.EventService;
 import org.luncert.csdn2.service.LogService;
+import org.luncert.csdn2.service.SpiderService;
+import org.luncert.csdn2.service.SpiderService.Status;
 import org.luncert.csdn2.util.NormalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,38 +38,50 @@ public class WebSocketHandler extends TextWebSocketHandler
 
     private WebSocketSession session;
 
-    private EventListener logEntityListener, articleEntityListener;
+    private EventListener logListener, articleListener, spiderStatusListener;
 
-    public class LogEntityListener implements EventListener
+    public class LogListener implements EventListener
     {
 
-        public void onSave(LogEntity logEntity)
+        public void onSave(Log log)
         {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("type", "Log");
-            jsonObject.put("content", JSON.toJSON(logEntity));
-            sendMessage(jsonObject.toJSONString());
+            jsonObject.put("content", JSON.toJSON(log));
+            sendMessage(jsonObject);
         }
 
     }
 
-    public class ArticleEntityListener implements EventListener
+    public class ArticleListener implements EventListener
     {
 
-        public void onSave(ArticleEntity articleEntity)
+        public void onSave(Article article)
         {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("type", "Article");
-            jsonObject.put("content", JSON.toJSON(articleEntity));
-            sendMessage(jsonObject.toJSONString());
+            jsonObject.put("content", JSON.toJSON(article));
+            sendMessage(jsonObject);
         }
 
     }
 
-    private void sendMessage(String message)
+    public class SpiderStatusListener implements EventListener
+    {
+
+        public void onChange(Status spiderStatus)
+        {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", "Spider.Status");
+            jsonObject.put("content", spiderStatus.name());
+            sendMessage(jsonObject);
+        }
+    }
+
+    private void sendMessage(JSONObject message)
     {
         try {
-            this.session.sendMessage(new TextMessage(message));
+            this.session.sendMessage(new TextMessage(message.toJSONString()));
         } catch (IOException e) {
             logService.error("exception on WebSocketServer.sendMessage",
                 NormalUtil.throwableToString(e));
@@ -78,19 +92,25 @@ public class WebSocketHandler extends TextWebSocketHandler
     public void afterConnectionEstablished(WebSocketSession session) throws Exception
     {
         super.afterConnectionEstablished(session);
-        logEntityListener = new LogEntityListener();
-        articleEntityListener = new ArticleEntityListener();
         this.session = session;
-        eventService.register(LogService.ON_SAVE_LOG_ENTITY, logEntityListener);
-        eventService.register(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
+
+        logListener = new LogListener();
+        eventService.register(LogService.ON_SAVE_LOG_ENTITY, logListener);
+
+        articleListener = new ArticleListener();
+        eventService.register(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleListener);
+
+        spiderStatusListener = new SpiderStatusListener();
+        eventService.register(SpiderService.ON_CHANGE_STATUS, spiderStatusListener);
     }
 
     @OnClose
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception
     {
         super.afterConnectionClosed(session, status);
-        eventService.unregister(LogService.ON_SAVE_LOG_ENTITY, logEntityListener);
-        eventService.unregister(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleEntityListener);
+        eventService.unregister(LogService.ON_SAVE_LOG_ENTITY, logListener);
+        eventService.unregister(ArticleService.ON_SAVE_ARTICLE_ENTITY, articleListener);
+        eventService.unregister(SpiderService.ON_CHANGE_STATUS, spiderStatusListener);
     }
 
 }

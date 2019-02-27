@@ -42,8 +42,7 @@
 .spiderStatus {
     position: fixed;
     bottom: 50px; right: 50px;
-    border: 1px solid rgb(161, 224, 211);
     box-shadow: 0px 0px 3px rgb(90, 131, 123);
-    background-color: rgba(231, 226, 226, 0.5);
+    background-color: rgba(231, 226, 226, 0.8);
     border-radius: 10px;
 }

@@ -3,7 +3,7 @@ package org.luncert.csdn2.controller;
 import java.util.Calendar;
 import java.util.List;
 
-import org.luncert.csdn2.model.mongo.LogEntity;
+import org.luncert.csdn2.model.mongo.Log;
 import org.luncert.csdn2.repository.mongo.LogRepos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 提供查询LogEntity的接口
+ * 提供查询Log的接口
  */
 @RestController
 @RequestMapping("/log")
@@ -28,7 +28,7 @@ public class LogController
     private LogRepos repos;
 
     @GetMapping
-    public Page<LogEntity> logs(@RequestParam(name="page") int page,
+    public Page<Log> logs(@RequestParam(name="page") int page,
         @RequestParam(name="size") int size)
     {
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "timestamp");
@@ -42,25 +42,25 @@ public class LogController
     }
 
     @GetMapping("/lastWeek")
-    public List<LogEntity> lastWeek()
+    public List<Log> lastWeek()
     {
         return logsLastNHours(168);
     }
 
     @GetMapping("/last3Day")
-    public List<LogEntity> last3Day()
+    public List<Log> last3Day()
     {
         return logsLastNHours(72);
     }
 
     @GetMapping("/lastDay")
-    public List<LogEntity> lastDay()
+    public List<Log> lastDay()
     {
         return logsLastNHours(24);
     }
 
     @GetMapping("/last{n}Hours")
-    public List<LogEntity> logsLastNHours(@PathVariable("n") int n)
+    public List<Log> logsLastNHours(@PathVariable("n") int n)
     {
         Calendar time = Calendar.getInstance();
         time.add(Calendar.HOUR_OF_DAY, -n);

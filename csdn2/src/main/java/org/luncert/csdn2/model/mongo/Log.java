@@ -12,7 +12,7 @@ import lombok.Data;
 @Document("logs")
 @Data
 @Builder
-public class LogEntity implements Serializable
+public class Log implements Serializable
 {
 
     public enum LogLevel

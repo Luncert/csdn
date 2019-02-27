@@ -2,7 +2,7 @@ package org.luncert.csdn2.controller;
 
 import javax.websocket.server.PathParam;
 
-import org.luncert.csdn2.model.mongo.ArticleEntity;
+import org.luncert.csdn2.model.mongo.Article;
 import org.luncert.csdn2.repository.mongo.ArticleRepos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,7 +26,7 @@ public class ArticleController
     private ArticleRepos repos;
 
     @GetMapping("/{articleId}")
-    public ArticleEntity article(@PathParam("articleId") String articleId)
+    public Article article(@PathParam("articleId") String articleId)
     {
         return repos.findOneByArticleId(articleId);
     }
@@ -38,10 +38,10 @@ public class ArticleController
     }
 
     @GetMapping
-    public Page<ArticleEntity> articles(@RequestParam(name="page") int page,
+    public Page<Article> articles(@RequestParam(name="page") int page,
         @RequestParam(name="size") int size)
     {
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "timestamp");
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createTime");
         return repos.findAll(pageable);
     }
 

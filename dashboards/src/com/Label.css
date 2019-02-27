@@ -22,3 +22,10 @@
 
 .error { color: rgb(194, 15, 15); }
 .fill.error { background-color: rgb(194, 15, 15); }
+
+.noWrap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}

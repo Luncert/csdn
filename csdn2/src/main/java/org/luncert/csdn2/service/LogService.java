@@ -1,7 +1,7 @@
 package org.luncert.csdn2.service;
 
-import org.luncert.csdn2.model.mongo.LogEntity;
-import org.luncert.csdn2.model.mongo.LogEntity.LogLevel;
+import org.luncert.csdn2.model.mongo.Log;
+import org.luncert.csdn2.model.mongo.Log.LogLevel;
 import org.luncert.csdn2.repository.mongo.LogRepos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class LogService
 
     private void log(LogLevel level, String desc, String detail)
     {
-        save(LogEntity.builder()
+        save(Log.builder()
             .timestamp(String.valueOf(System.currentTimeMillis()))
             .level(level.getName())
             .desc(desc)
@@ -58,11 +58,11 @@ public class LogService
             .build());
     }
 
-    private void save(LogEntity logEntity)
+    private void save(Log log)
     {
         // 发布事件，通知WebSocketHandler
-        eventService.submit(ON_SAVE_LOG_ENTITY, logEntity);
-        logRepos.save(logEntity);
+        eventService.submit(ON_SAVE_LOG_ENTITY, log);
+        logRepos.save(log);
     }
 
 }

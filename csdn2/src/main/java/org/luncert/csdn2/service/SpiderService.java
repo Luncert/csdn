@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 /**
  * 根据Category爬取csdn所有文章
  * TODO: 0 downtime code updating
+ * TODO: 多路状态复合
  */
 @Service
 public class SpiderService
@@ -59,10 +60,11 @@ public class SpiderService
             threadPool.execute(() -> {
                 int errorTime = 0;
                 String shownOffset = null;
+                SpiderProcess process = spiderProcessRepos.findByCategory(category);
                 if (startedOnce) {
                     // 已经启动过一次了，则从数据库恢复运行
-                    SpiderProcess process = spiderProcessRepos.findByCategory(category);
                     if (process != null) {
+                        if (process.isFinished()) return;
                         shownOffset = process.getShownOffset();
                         logService.info("spider(category = " + category +
                             ") resume processing from shownOffset = " + shownOffset);
@@ -72,22 +74,29 @@ public class SpiderService
                 while (errorTime < 3) {
                     // 持久化当前进度，用于恢复运行
                     if (wannaStop) {
-                        spiderProcessRepos.save(
-                            new SpiderProcess(category, shownOffset));
+                        if (process == null) {
+                            process = new SpiderProcess(category);
+                        }
+                        process.setShownOffset(shownOffset);
+                        spiderProcessRepos.save(process);
                         break;
                     }
                     try {
                         shownOffset = articleService.getMoreArticle(category, shownOffset);
                         errorTime = 0;
+                        if (shownOffset == null) {
+                            // 该目录已经爬取完了，标记一下
+                            process.setFinished(true);
+                            spiderProcessRepos.save(process);
+                            break;
+                        }
+                        Thread.sleep(10000); // 休息10s
                     } catch (Exception e) {
                         // save log to Mongodb
                         logService.error("@SpiderService.start.getMoreArticle(" + category + ", " + shownOffset + ")",
                                 NormalUtil.throwableToString(e));
                         errorTime++;
                     }
-                    try {
-                        Thread.sleep(1500);
-                    } catch (Exception e) {}
                 }
                 // 退出日志
                 if (errorTime == 3) {
@@ -114,25 +123,14 @@ public class SpiderService
 
         changeStatus(Status.Stopping);
         wannaStop = true;
-        try {
-            while (true) {
-                try {
-                    // 无限等待，并且返回false时抛出异常
-                    assert threadPool.awaitTermination(0, TimeUnit.SECONDS) == true;
+        threadPool.shutdown();
+        while (true) {
+            try {
+                if (threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS)) {
                     changeStatus(Status.Stopped);
                     return true;
-                } catch (InterruptedException e) {
-                    // 如果是被中断等待，则中心进入等待
-                    logService.error("interrupted on awaitTermination",
-                            NormalUtil.throwableToString(e));
                 }
-            }
-        } catch (AssertionError e) {
-            // NOTICE: assert失败应该是不可能的，如果出现了，那就是
-            // 无法预料的情况了
-            logService.error("assertion error on awaitTermination",
-                    NormalUtil.throwableToString(e));
-            return false;
+            } catch (InterruptedException e) {}
         }
     }
 

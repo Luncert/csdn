@@ -1,5 +1,5 @@
 
-import { r, rc } from '../util/react-helper';
+import { r, rc, ReactType } from '../util/react-helper';
 import { Component, Props } from '../com/Component';
 import ItemList from '../com/ItemList';
 import Avatar from '../com/Avatar';
@@ -13,6 +13,8 @@ import resource, { Page } from '../core/Resource';
 import acceleratorManager, { KEYS, CombineKey } from '../core/AcceleratorManager';
 import Loader from '../com/Loader';
 import TopPanel from '../com/TopPanel';
+import { Row } from '../com/Layout';
+import RawText from '../com/RawText';
 
 const Websocket = <any> require('react-websocket')
 const styles = <any> require('./HomePage.css');
@@ -32,6 +34,7 @@ interface Article {
     author: string;
     createTime: string;
     readCount: number;
+    content: string;
 }
 
 interface Log {
@@ -45,17 +48,23 @@ interface State {
     showFilterBox: boolean;
     filterQuery: string;
     spiderStatus: string;
+
     logCount: number;
     articleCount: number;
+
     loadingLogs: boolean;
     loadingArticles: boolean;
+
+    detailContent: ReactType;
 }
 
+/**
+ * TODO: 控制列表数目，提高性能
+ */
 export default class HomePage extends Component {
 
     props: Props;
     state: State;
-    colors: string[] = [];
 
     logPage = 0;
     logTotalPage = 0;
@@ -75,6 +84,7 @@ export default class HomePage extends Component {
             articleCount: 0,
             loadingArticles: false,
             loadingLogs: false,
+            detailContent: null
         };
     }
 
@@ -84,8 +94,6 @@ export default class HomePage extends Component {
             () => this.setState({showFilterBox: true}),
             new CombineKey(KEYS.F, false, true, true)
         );
-        for (let i = 0; i < 2; i++)
-            this.colors.push(this.randomColor());
         // 刷新spider状态
         this.refreshSpiderStatus();
 
@@ -216,7 +224,8 @@ export default class HomePage extends Component {
     render() {
         const { showFilterBox, spiderStatus,
             articleCount, logCount,
-            loadingArticles, loadingLogs
+            loadingArticles, loadingLogs,
+            detailContent
         } = this.state;
 
         let key = 0;
@@ -226,7 +235,31 @@ export default class HomePage extends Component {
             for (let article of this.articleList) {
                 article = <Article> article;
                 articles.push(
-                    rc('div', key++, null,
+                    rc('div', key++, { onClick: () => {
+                            let tmp = [
+                                rc(Row, 0, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Title'),
+                                    rc(Label, 1, null, article.title)
+                                    ),
+                                rc(Row, 1, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Author'),
+                                    rc(Label, 1, null, article.author),
+                                    rc(Label, 2, {fill: 'gray'}, 'Read Count'),
+                                    rc(Label, 3, null, article.readCount),
+                                    ),
+                                rc(Row, 2, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Create Time'),
+                                    rc(Label, 1, null, article.createTime)
+                                    ),
+                                rc(Row, 3, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Content'),
+                                    rc('div', 1, {
+                                        dangerouslySetInnerHTML: {__html: article.content},
+                                        style: { position: 'relative', display: 'inline-block', border: '1px solid gray', borderRadius: '5px' } })
+                                    ),
+                            ];
+                            this.setState({detailContent: tmp});
+                        } },
                         rc(Label, 0, {size: 18, color: 'black', bold: true, href: null}, article.title),
                         rc(Label, 1, {noWrap: true}, article.summary),
                         rc(Avatar, 2, {src: article.avatar, size: 20}),
@@ -248,8 +281,28 @@ export default class HomePage extends Component {
                 log = <Log> log;
                 let formattedTime = this.parseTimestamp(log.timestamp);
                 logs.push(
-                    rc('div', key++, { onClick: () => { console.log(log.detail) } },
-                        rc(Label, 0, {fill: true, type: log.level.toLowerCase()}, log.level),
+                    rc('div', key++, { onClick: () => {
+                            let tmp = [
+                                rc(Row, 0, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Log Level'),
+                                    rc(Label, 1, {fill: '', type: log.level}, log.level)
+                                    ),
+                                rc(Row, 1, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Timestamp'),
+                                    rc(Label, 1, null, formattedTime)
+                                    ),
+                                rc(Row, 2, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Description'),
+                                    rc(Label, 1, null, log.desc)
+                                    ),
+                                rc(Row, 3, null,
+                                    rc(Label, 0, {fill: 'gray'}, 'Detail'),
+                                    rc(RawText, 1, {value: log.detail})
+                                    ),
+                            ];
+                            this.setState({detailContent: tmp});
+                        } },
+                        rc(Label, 0, {fill: true, type: log.level}, log.level),
                         rc(Label, 1, {color: 'black', size: 13}, formattedTime),
                         rc(Label, 2, {style: {display: 'block'}}, log.desc),
                         rc(Label, 3, {noWrap: true, style: {display: 'block'}}, log.detail),
@@ -261,9 +314,10 @@ export default class HomePage extends Component {
         }
 
         return r('div', {className: styles.root },
-            rc(TopPanel, 'detailPanel', null, 'asddsd'), // TODO:
+            detailContent &&
+                rc(TopPanel, 'detailPanel', {onExit: () => this.setState({detailContent: null})}, detailContent),
             rc(Websocket, 'websocket', {
-                url: 'ws://localhost:8080/websocket',
+                url: 'ws://ai.uppfind.com:80/csdn2/websocket',
                 onMessage: this.onWSData.bind(this) }),
             // left side
             rc('div', 'leftSide', { className: styles.listBox },
@@ -340,13 +394,4 @@ export default class HomePage extends Component {
             + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
     }
     
-    private randomColor() {
-        let clr = '#';
-        const v = '0123456789abcdef';
-        for (let i = 0, limit = 6; i < limit; i++) {
-            clr += v[Math.round(Math.random() * 16)];
-        }
-        return clr;
-    }
-
 }

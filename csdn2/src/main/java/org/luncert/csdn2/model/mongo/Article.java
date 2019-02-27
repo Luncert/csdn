@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@Document(collection = "Articles")
+@Document("Article")
 public class Article implements Serializable
 {
 

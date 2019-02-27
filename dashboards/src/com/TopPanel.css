@@ -17,6 +17,25 @@
     position: relative;
     padding: 5px;
     background-color: white;
-    box-shadow: 0px 0px 5px black;
+    box-shadow: 0px 0px 10px black;
     border-radius: 10px;
+    max-width: 80%; max-height: 80%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.container::-webkit-scrollbar {
+    margin-right: 2px;
+    width: 10px;
+}
+
+.container::-webkit-scrollbar-thumb {
+    box-sizing: border-box;
+    background-color: rgb(150, 150, 150);
+    border: 1px white solid;
+    border-radius: 5px;
+}
+
+.container::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0);
 }

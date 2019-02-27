@@ -14,7 +14,7 @@ interface Page {
 
 class Resource {
 
-    urlBase = 'http://localhost:8080/';
+    urlBase = 'http://ai.uppfind.com:80/csdn2/';
 
     private buildUrl(name: string, params?: {}) {
         let url = this.urlBase + name.split('.').join('/');

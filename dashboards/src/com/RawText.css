@@ -1,0 +1,8 @@
+.root {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+}

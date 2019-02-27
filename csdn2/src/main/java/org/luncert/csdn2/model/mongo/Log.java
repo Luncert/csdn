@@ -9,9 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Builder;
 import lombok.Data;
 
-@Document("logs")
 @Data
 @Builder
+@Document("Log")
 public class Log implements Serializable
 {
 

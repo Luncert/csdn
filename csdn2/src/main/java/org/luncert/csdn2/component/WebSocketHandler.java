@@ -78,7 +78,7 @@ public class WebSocketHandler extends TextWebSocketHandler
         }
     }
 
-    private void sendMessage(JSONObject message)
+    synchronized private void sendMessage(JSONObject message)
     {
         try {
             this.session.sendMessage(new TextMessage(message.toJSONString()));

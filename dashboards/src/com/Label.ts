@@ -9,11 +9,12 @@ interface CusProps extends Props {
     type: string;
     size: number;
     color: string;
-    fill: boolean;
+    fill: string;
     selected: boolean;
     bold: boolean;
     href: string;
     noWrap: boolean;
+    border: string;
 }
 
 const LABEL_TYPE = { INFO: 'info', WARN: 'warn', ERROR: 'error' };
@@ -27,11 +28,12 @@ export {
  * * type: 标签类型，决定标签基本样式，默认LABEL_TYPE.INFO
  * * size: 设置字体大小，默认15px
  * * color: 字体颜色
- * * fill: 是否填充背景
+ * * fill: 背景颜色，不设置时无填充
  * * selected: 文字是否可以选中，默认true
  * * bold: 是否加粗，默认false
  * * href: 绑定链接，并改变光标样式
  * * noWrap: 不换行，默认false
+ * * border: border颜色，不设置时无border
  */
 export default class Label extends Component {
 
@@ -39,27 +41,26 @@ export default class Label extends Component {
 
     render() {
         const {
-            type=LABEL_TYPE.INFO,
+            type='',
             size=15, color,
-            fill=false,
+            fill,
             selected=true,
             bold=false,
-            href, noWrap=false,
+            href, noWrap=false, border,
             style={}, children } = this.props;
 
         let className = st.join(styles.label, styles[type]);
-        if (fill) className = st.join(className, styles.fill);
-        if (noWrap) className = st.join(className, styles.noWrap);
+        if (fill != undefined) {
+            className = st.join(className, styles.fill);
+            if (fill.length > 0)
+                style['backgroundColor'] = fill;
+        }
+        noWrap && (className = st.join(className, styles.noWrap));
         style['fontSize'] = size + 'px';
-        if (color) {
-            style['color'] = color;
-        }
-        if (bold) {
-            style['fontWeight'] = 'bold';
-        }
-        if (href) {
-            style['cursor'] = 'pointer';
-        }
+        color && (style['color'] = color);
+        bold && (style['fontWeight'] = 'bold');
+        href && (style['cursor'] = 'pointer');
+        border && (style['border'] = '1px solid ' + border);
         style['userSelect'] = selected ? 'auto' : 'none';
 
         return r('div', {

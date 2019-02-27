@@ -32,7 +32,9 @@ export default class Input extends Component {
     }
 
     render() {
-        const { value, placeholder, backgroundColor, multiLine, onChange, style } = this.props;
+        const { value, placeholder,
+            backgroundColor, multiLine,
+            onChange, style={} } = this.props;
         style['backgroundColor'] = backgroundColor;
         return r(multiLine ? 'span' : 'input', {
                 contentEditable: multiLine,

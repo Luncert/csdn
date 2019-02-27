@@ -4,14 +4,15 @@
     vertical-align: middle;
     word-break: break-all;
     word-wrap: break-word;
+    border-radius: 5px;
     margin: 2px;
 }
 
 .fill {
     box-sizing: content-box;
     color: white !important;
-    border-radius: 3px;
     padding: 0px 5px;
+    background-color: gray;
 }
 
 .info { color: rgb(113, 114, 113); }

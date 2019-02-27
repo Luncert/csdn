@@ -76,13 +76,13 @@ export default class HomePage extends Component {
         // 刷新spider状态
         this.refreshSpiderStatus();
         // 获取Articles
-        resource.get('article', {maxSize: 100})
+        resource.get('article', {page: 0, size: 30})
             .done((articleList) => {
                 this.articleList = articleList;
                 this.forceUpdate();
             });
         // 获取Logs
-        resource.get('log', {maxSize: 100})
+        resource.get('log', {page: 0, size: 30})
             .done((logList) => {
                 for (let item of logList) {
                     item.timestamp = parseInt(item.timestamp);

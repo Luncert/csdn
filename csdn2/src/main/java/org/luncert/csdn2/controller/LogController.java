@@ -3,13 +3,16 @@ package org.luncert.csdn2.controller;
 import java.util.Calendar;
 import java.util.List;
 
-import javax.websocket.server.PathParam;
-
 import org.luncert.csdn2.model.mongo.LogEntity;
 import org.luncert.csdn2.repository.mongo.LogRepos;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -24,9 +27,17 @@ public class LogController
     private LogRepos repos;
 
     @GetMapping
-    public List<LogEntity> logs()
+    public Page<LogEntity> logs(@RequestParam(name="page", required=false) int page,
+        @RequestParam(name="size", required=false) int size)
     {
-        return repos.findAll();
+        Pageable pageable = PageRequest.of(page, size);
+        return repos.findAll(pageable);
+    }
+
+    @GetMapping("/count")
+    public long logCount()
+    {
+        return repos.count();
     }
 
     @GetMapping("/lastWeek")
@@ -48,7 +59,7 @@ public class LogController
     }
 
     @GetMapping("/last{n}Hours")
-    public List<LogEntity> logsLastNHours(@PathParam("n") int n)
+    public List<LogEntity> logsLastNHours(@PathVariable("n") int n)
     {
         Calendar time = Calendar.getInstance();
         time.add(Calendar.HOUR_OF_DAY, -n);
